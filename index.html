@@ -498,7 +498,7 @@ function moeda(valor){
 
 async function carregarCSV(){
     try{
-        const resposta = await fetch("produtos.csv");
+        const resposta = await fetch("produtosfinal.csv");
         if(!resposta.ok){
             throw new Error("Arquivo produtos.csv não encontrado");
         }
@@ -516,12 +516,15 @@ async function carregarCSV(){
         linhas.shift();
         for(const linha of linhas){
             if(!linha.trim()) continue;
-            const partes = linha.split(",");
-            if(partes.length < 4) continue;
-            const codigo = (partes[0] || "").trim();
-            const nome = (partes[1] || "").trim();
-            const custo = parseFloat((partes[2] || "0").trim()) || 0;
-            const preco = parseFloat((partes[3] || "0").trim()) || 0;
+            const partes = linha.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g);
+            if(!partes || partes.length < 4) continue;
+
+            const limpar = v => (v || "").trim().replace(/^"|"$/g, "");
+
+            const codigo = limpar(partes[0]);
+            const nome = limpar(partes[1]);
+            const custo = parseFloat(limpar(partes[2]).replace(",", ".")) || 0;
+            const preco = parseFloat(limpar(partes[3]).replace(",", ".")) || 0;
             let markup = null;
             if(custo > 0){
                 markup = (((preco - custo) / custo) * 100);
