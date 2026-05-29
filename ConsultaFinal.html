@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consulta de Produtos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+
+:root{
+    --bg:#f8fafc;
+    --card:#ffffff;
+    --border:#e2e8f0;
+    --text:#0f172a;
+    --text-muted:#64748b;
+    --primary:#6366f1;
+    --primary-dark:#4f46e5;
+    --success:#10b981;
+    --warning:#f59e0b;
+    --danger:#ef4444;
+    --orange:#f97316;
+    --indigo:#6366f1;
+    --purple:#8b5cf6;
+    --gradient:linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    --shadow-sm:0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow:0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --shadow-lg:0 20px 25px -5px rgb(0 0 0 / 0.1);
+    --shadow-glow:0 0 20px rgba(99,102,241,0.15);
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Inter', -apple-system, sans-serif;
+}
+
+body{
+    background:radial-gradient(circle at 20% 20%, #eef2ff 0%, transparent 50%),
+               radial-gradient(circle at 80% 80%, #fef3c7 0%, transparent 50%),
+               #f8fafc;
+    padding:20px;
+    min-height:100vh;
+}
+
+.container{
+    max-width:1300px;
+    margin:auto;
+}
+
+.topo{
+    background:rgba(255,255,255,0.9);
+    backdrop-filter:blur(20px) saturate(180%);
+    padding:28px;
+    border-radius:20px;
+    margin-bottom:24px;
+    box-shadow:var(--shadow-lg);
+    border:1px solid rgba(255,255,255,0.8);
+}
+
+.topo-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:18px;
+}
+
+h1{
+    font-size:24px;
+    color:var(--text);
+    font-weight:800;
+    letter-spacing:-0.8px;
+    background:var(--gradient);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+    background-clip:text;
+}
+
+.badge-live{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:6px 12px;
+    background:#d1fae5;
+    color:#065f46;
+    border-radius:20px;
+    font-size:11px;
+    font-weight:600;
+}
+
+.badge-live:before{
+    content:"";
+    width:6px;
+    height:6px;
+    background:#10b981;
+    border-radius:50%;
+    animation:pulse 2s infinite;
+}
+
+@keyframes pulse{
+    0%,100%{opacity:1}
+    50%{opacity:0.5}
+}
+
+.search-wrapper{
+    position:relative;
+}
+
+.search-wrapper:before{
+    content:"🔍";
+    position:absolute;
+    left:16px;
+    top:50%;
+    transform:translateY(-50%);
+    font-size:16px;
+    opacity:0.4;
+    pointer-events:none;
+}
+
+#pesquisa{
+    width:100%;
+    padding:14px 16px 14px 44px;
+    border:2px solid var(--border);
+    border-radius:12px;
+    background:var(--card);
+    font-size:14px;
+    outline:none;
+    transition:all 0.3s;
+    font-weight:500;
+}
+
+#pesquisa:focus{
+    border-color:var(--primary);
+    box-shadow:0 0 0 4px rgba(99,102,241,0.1), var(--shadow-glow);
+    transform:translateY(-1px);
+}
+
+.info{
+    margin-top:12px;
+    color:var(--text-muted);
+    font-size:12px;
+    font-weight:500;
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.lista{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(380px, 1fr));
+    gap:18px;
+}
+
+.card{
+    background:var(--card);
+    border-radius:18px;
+    border:1px solid var(--border);
+    overflow:hidden;
+    transition:all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position:relative;
+}
+
+.card:before{
+    content:"";
+    position:absolute;
+    inset:0;
+    border-radius:18px;
+    padding:2px;
+    background:var(--gradient);
+    -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite:xor;
+    mask-composite:exclude;
+    opacity:0;
+    transition:0.4s;
+    pointer-events:none;
+}
+
+.card:hover{
+    box-shadow:var(--shadow-lg), var(--shadow-glow);
+    transform:translateY(-4px);
+}
+
+.card:hover:before{
+    opacity:1;
+}
+
+.erro{
+    background:linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    border-color:#fde68a;
+}
+
+.card-header{
+    padding:20px 20px 16px;
+    position:relative;
+}
+
+.nome{
+    font-size:17px;
+    font-weight:700;
+    margin-bottom:8px;
+    line-height:1.4;
+    letter-spacing:-0.4px;
+    background:linear-gradient(135deg, #1e293b 0%, #475569 100%);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+    background-clip:text;
+    transition:all 0.3s;
+}
+
+.card:hover.nome{
+    background:var(--gradient);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+    background-clip:text;
+}
+
+.codigo{
+    color:var(--text-muted);
+    font-size:12px;
+    font-weight:600;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:4px 10px;
+    background:var(--bg);
+    border-radius:6px;
+}
+
+.codigo:before{
+    content:"#";
+    opacity:0.6;
+    font-weight:700;
+}
+
+.dados-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:1px;
+    background:var(--border);
+}
+
+.dado{
+    background:var(--card);
+    padding:16px 20px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    transition:0.2s;
+}
+
+.dado:hover{
+    background:var(--bg);
+}
+
+.dado-label{
+    font-size:10px;
+    color:var(--text-muted);
+    text-transform:uppercase;
+    letter-spacing:0.8px;
+    font-weight:700;
+    display:flex;
+    align-items:center;
+    gap:6px;
+}
+
+.dado-valor{
+    font-weight:800;
+    font-size:16px;
+    letter-spacing:-0.5px;
+}
+
+.preco.dado-valor{ color:var(--success); font-size:22px; }
+.custo.dado-valor{ color:var(--indigo); }
+.markup.dado-valor{ color:var(--orange); }
+
+.vazio{
+    text-align:center;
+    color:var(--text-muted);
+    padding:80px 20px;
+    background:var(--card);
+    border-radius:18px;
+    border:1px solid var(--border);
+    font-weight:600;
+    font-size:16px;
+}
+
+.vazio:before{
+    content:"📦";
+    display:block;
+    font-size:48px;
+    margin-bottom:16px;
+    opacity:0.3;
+}
+
+mark{
+    background:transparent;
+    padding:0;
+    font-weight:800;
+    color:var(--primary);
+}
+
+.simulador{
+    padding:20px;
+    background:linear-gradient(135deg, #fafafa 0%, #ffffff 100%);
+}
+
+.simulador-titulo{
+    font-size:13px;
+    font-weight:700;
+    color:var(--text);
+    margin-bottom:14px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    letter-spacing:-0.3px;
+}
+
+.simulador-titulo:before{
+    content:"⚡";
+    font-size:18px;
+    filter:drop-shadow(0 2px 4px rgba(99,102,241,0.3));
+}
+
+.simulador-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:10px;
+    margin-bottom:16px;
+}
+
+.input-group label{
+    font-size:11px;
+    color:var(--text-muted);
+    display:block;
+    margin-bottom:6px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+}
+
+.simulador input{
+    width:100%;
+    padding:11px 12px;
+    border:2px solid var(--border);
+    border-radius:10px;
+    background:var(--card);
+    font-size:14px;
+    outline:none;
+    transition:all 0.3s;
+    font-weight:600;
+}
+
+.simulador input:focus{
+    border-color:var(--primary);
+    background:white;
+    box-shadow:0 0 0 4px rgba(99,102,241,0.1);
+    transform:translateY(-1px);
+}
+
+.resultado{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+}
+
+.metrica{
+    background:white;
+    border-radius:12px;
+    padding:14px;
+    border:2px solid var(--border);
+    transition:all 0.3s;
+    position:relative;
+    overflow:hidden;
+}
+
+.metrica:before{
+    content:"";
+    position:absolute;
+    top:0;
+    left:0;
+    width:3px;
+    height:100%;
+    background:var(--gradient);
+    opacity:0;
+    transition:0.3s;
+}
+
+.metrica:hover{
+    border-color:var(--primary);
+    transform:translateY(-2px);
+    box-shadow:var(--shadow-md);
+}
+
+.metrica:hover:before{
+    opacity:1;
+}
+
+.metrica strong{
+    display:block;
+    font-size:9px;
+    color:var(--text-muted);
+    margin-bottom:8px;
+    text-transform:uppercase;
+    letter-spacing:0.8px;
+    font-weight:800;
+}
+
+.metrica-valor{
+    font-weight:800;
+    font-size:18px;
+    letter-spacing:-0.6px;
+}
+
+.negativo{ color:var(--danger); }
+.positivo{ color:var(--success); }
+.meta{ color:var(--primary); }
+
+.metrica.destaque{
+    grid-column:1 / -1;
+    background:linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+    border-color:#c7d2fe;
+    border-width:2px;
+}
+
+.metrica.destaque:before{
+    opacity:1;
+    width:4px;
+}
+
+@media (max-width: 768px){
+.lista{
+        grid-template-columns:1fr;
+    }
+.simulador-grid{
+        grid-template-columns:1fr;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="topo">
+        <div class="topo-header">
+            <h1>Consulta de Produtos</h1>
+            <div class="badge-live">Online</div>
+        </div>
+        <div class="search-wrapper">
+            <input
+                type="text"
+                id="pesquisa"
+                placeholder="Buscar por código, nome, custo ou venda..."
+                autocomplete="off"
+            >
+        </div>
+        <div class="info">
+            <span>⚡</span> Simule custo, preço e desconto para cotações em tempo real
+        </div>
+    </div>
+
+    <div class="lista" id="lista"></div>
+
+</div>
+
+<script>
+
+const lista = document.getElementById("lista");
+const pesquisa = document.getElementById("pesquisa");
+
+let produtos = [];
+
+function normalizar(texto){
+    return texto
+.toString()
+.toLowerCase()
+.normalize("NFD")
+.replace(/[\u0300-\u036f]/g, "");
+}
+
+function destacar(texto, busca){
+    if(!busca) return texto;
+    const regex = new RegExp(`(${busca})`, "gi");
+    return texto.toString().replace(regex, "<mark>$1</mark>");
+}
+
+function moeda(valor){
+    return valor.toLocaleString("pt-BR", {
+        minimumFractionDigits:2,
+        maximumFractionDigits:2
+    });
+}
+
+async function carregarCSV(){
+    try{
+        const resposta = await fetch("produtosv5.csv");
+        if(!resposta.ok){
+            throw new Error("Arquivo produtos.csv não encontrado");
+        }
+        const texto = await resposta.text();
+        if(
+            texto.includes("<html") ||
+            texto.includes("<style") ||
+            texto.includes("box-shadow")
+        ){
+            throw new Error("O sistema carregou HTML/CSS em vez do CSV");
+        }
+        produtos = [];
+        const conteudo = texto.replace(/^\uFEFF/, "");
+        const linhas = conteudo.split(/\r?\n/);
+        linhas.shift();
+        for(const linha of linhas){
+            if(!linha.trim()) continue;
+            const partes = linha.split(",");
+            if(partes.length < 4) continue;
+            const codigo = (partes[0] || "").trim();
+            const nome = (partes[1] || "").trim();
+            const custo = parseFloat((partes[2] || "0").trim()) || 0;
+            const preco = parseFloat((partes[3] || "0").trim()) || 0;
+            let markup = null;
+            if(custo > 0){
+                markup = (((preco - custo) / custo) * 100);
+            }
+            produtos.push({codigo,nome,custo,preco,markup});
+        }
+        renderizar(produtos);
+    }catch(erro){
+        console.error(erro);
+        lista.innerHTML = `<div class="vazio"><b>Erro ao carregar CSV</b><br><br>${erro.message}</div>`;
+    }
+}
+
+function pesquisar(){
+    const termo = normalizar(pesquisa.value);
+    if(!termo){
+        renderizar(produtos);
+        return;
+    }
+    const termos = termo.split(" ");
+    const filtrados = produtos.filter(produto => {
+        const texto = normalizar(
+            produto.codigo + " " +
+            produto.nome + " " +
+            produto.custo + " " +
+            produto.preco
+        );
+        return termos.every(t => texto.includes(t));
+    });
+    renderizar(filtrados, termo);
+}
+
+function simular(card){
+    const custoAtual = parseFloat(card.dataset.custo);
+    const precoAtual = parseFloat(card.dataset.preco);
+
+    const inputCusto = card.querySelector(".input-custo");
+    const inputVenda = card.querySelector(".input-venda");
+    const inputDesconto = card.querySelector(".input-desconto");
+    const resultado = card.querySelector(".resultado");
+
+    const novoCusto = parseFloat(inputCusto.value.replace(",", ".")) || custoAtual;
+    const novaVenda = parseFloat(inputVenda.value.replace(",", ".")) || precoAtual;
+    const desconto = parseFloat(inputDesconto.value.replace(",", ".")) || 0;
+
+    if(novoCusto <= 0 || novaVenda <= 0){
+        resultado.innerHTML = "";
+        return;
+    }
+
+    // Cálculos
+    const precoComDesconto = novaVenda * (1 - (desconto / 100));
+    const lucroNormal = novaVenda - novoCusto;
+    const lucroComDesconto = precoComDesconto - novoCusto;
+    const markupNovo = ((novaVenda - novoCusto) / novoCusto) * 100;
+    const markupComDesconto = ((precoComDesconto - novoCusto) / novoCusto) * 100;
+
+    // Variações
+    const varCusto = ((novoCusto - custoAtual) / custoAtual) * 100;
+    const varVenda = ((novaVenda - precoAtual) / precoAtual) * 100;
+
+    // Se tem desconto, mostra cenário de desconto
+    if(desconto > 0){
+        resultado.innerHTML = `
+            <div class="metrica destaque">
+                <strong>💰 Cliente paga</strong>
+                <div class="metrica-valor meta">
+                    R$ ${moeda(precoComDesconto)}
+                </div>
+            </div>
+            <div class="metrica">
+                <strong>📊 Lucro c/ desc.</strong>
+                <div class="metrica-valor ${lucroComDesconto < 0? 'negativo' : 'positivo'}">
+                    R$ ${moeda(lucroComDesconto)}
+                </div>
+            </div>
+            <div class="metrica">
+                <strong>📈 Markup c/ desc.</strong>
+                <div class="metrica-valor ${markupComDesconto < 20? 'negativo' : 'positivo'}">
+                    ${markupComDesconto.toFixed(1)}%
+                </div>
+            </div>
+            <div class="metrica">
+                <strong>🎯 Markup normal</strong>
+                <div class="metrica-valor ${markupNovo < 20? 'negativo' : 'positivo'}">
+                    ${markupNovo.toFixed(1)}%
+                </div>
+            </div>
+        `;
+    } else {
+        // Cenário de cotação: só custo ou venda mudaram
+        resultado.innerHTML = `
+            <div class="metrica">
+                <strong>💵 Lucro bruto</strong>
+                <div class="metrica-valor ${lucroNormal < 0? 'negativo' : 'positivo'}">
+                    R$ ${moeda(lucroNormal)}
+                </div>
+            </div>
+            <div class="metrica">
+                <strong>📈 Markup novo</strong>
+                <div class="metrica-valor ${markupNovo < 20? 'negativo' : 'positivo'}">
+                    ${markupNovo.toFixed(1)}%
+                </div>
+            </div>
+            <div class="metrica">
+                <strong>📦 Var. custo</strong>
+                <div class="metrica-valor ${varCusto > 0? 'negativo' : 'positivo'}">
+                    ${varCusto.toFixed(1)}%
+                </div>
+            </div>
+            <div class="metrica">
+                <strong>💰 Var. venda</strong>
+                <div class="metrica-valor ${varVenda < 0? 'negativo' : 'positivo'}">
+                    ${varVenda.toFixed(1)}%
+                </div>
+            </div>
+        `;
+    }
+}
+
+function renderizar(listaProdutos, termo = ""){
+    lista.innerHTML = "";
+    if(listaProdutos.length === 0){
+        lista.innerHTML = `<div class="vazio">Nenhum produto encontrado</div>`;
+        return;
+    }
+    listaProdutos.slice(0, 100).forEach(produto => {
+        const card = document.createElement("div");
+        const possuiErro = (produto.custo <= 0 || produto.preco <= 0);
+        const lucroAtual = produto.preco - produto.custo;
+        card.className = possuiErro? "card erro" : "card";
+        card.dataset.custo = produto.custo;
+        card.dataset.preco = produto.preco;
+        card.innerHTML = `
+            <div class="card-header">
+                <div class="nome">${destacar(produto.nome, termo)}</div>
+                <div class="codigo">${destacar(produto.codigo, termo)}</div>
+            </div>
+            <div class="dados-grid">
+                <div class="dado preco">
+                    <div class="dado-label">💰 Preço Venda</div>
+                    <div class="dado-valor">R$ ${moeda(produto.preco)}</div>
+                </div>
+                <div class="dado custo">
+                    <div class="dado-label">📦 Custo</div>
+                    <div class="dado-valor">R$ ${moeda(produto.custo)}</div>
+                </div>
+                <div class="dado markup">
+                    <div class="dado-label">📈 Markup</div>
+                    <div class="dado-valor">
+                        ${produto.markup!== null? produto.markup.toFixed(1) + "%" : "—"}
+                    </div>
+                </div>
+                <div class="dado">
+                    <div class="dado-label">💵 Lucro Bruto</div>
+                    <div class="dado-valor" style="color:var(--success)">
+                        R$ ${moeda(lucroAtual)}
+                    </div>
+                </div>
+            </div>
+            <div class="simulador">
+                <div class="simulador-titulo">Simular Cenário</div>
+                <div class="simulador-grid">
+                    <div class="input-group">
+                        <label>Custo</label>
+                        <input
+                            type="number"
+                            step="0.01"
+                            class="input-custo"
+                            placeholder="${moeda(produto.custo)}"
+                            oninput="simular(this.closest('.card'))"
+                        >
+                    </div>
+                    <div class="input-group">
+                        <label>Venda</label>
+                        <input
+                            type="number"
+                            step="0.01"
+                            class="input-venda"
+                            placeholder="${moeda(produto.preco)}"
+                            oninput="simular(this.closest('.card'))"
+                        >
+                    </div>
+                    <div class="input-group">
+                        <label>Desc. %</label>
+                        <input
+                            type="number"
+                            step="0.1"
+                            class="input-desconto"
+                            placeholder="0"
+                            oninput="simular(this.closest('.card'))"
+                        >
+                    </div>
+                </div>
+                <div class="resultado"></div>
+            </div>
+        `;
+        lista.appendChild(card);
+    });
+}
+
+pesquisa.addEventListener("input", pesquisar);
+carregarCSV();
+
+</script>
+
+</body>
+</html>
