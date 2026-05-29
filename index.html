@@ -498,7 +498,7 @@ function moeda(valor){
 
 async function carregarCSV(){
     try{
-        const resposta = await fetch("produtosv5.csv");
+        const resposta = await fetch("produtosv5_corrigido.csv");
         if(!resposta.ok){
             throw new Error("Arquivo produtos.csv não encontrado");
         }
