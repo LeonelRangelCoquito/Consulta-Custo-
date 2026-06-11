@@ -210,7 +210,7 @@ h1{
     transition:all 0.3s;
 }
 
-.card:hover.nome{
+.card:hover .nome{
     background:var(--gradient);
     -webkit-background-clip:text;
     -webkit-text-fill-color:transparent;
@@ -391,7 +391,7 @@ mark{
 .metrica:hover{
     border-color:var(--primary);
     transform:translateY(-2px);
-    box-shadow:var(--shadow-md);
+    box-shadow:var(--shadow);
 }
 
 .metrica:hover:before{
@@ -483,10 +483,23 @@ function normalizar(texto){
 .replace(/[\u0300-\u036f]/g, "");
 }
 
+function escapeRegExp(s){
+    return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function escapeHtml(s){
+    return s.replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/\"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+}
+
 function destacar(texto, busca){
-    if(!busca) return texto;
-    const regex = new RegExp(`(${busca})`, "gi");
-    return texto.toString().replace(regex, "<mark>$1</mark>");
+    if(!busca) return escapeHtml(texto.toString());
+    const termoEscaped = escapeRegExp(busca);
+    const regex = new RegExp(`(${termoEscaped})`, "gi");
+    return escapeHtml(texto.toString()).replace(regex, "<mark>$1</mark>");
 }
 
 function moeda(valor){
@@ -498,9 +511,10 @@ function moeda(valor){
 
 async function carregarCSV(){
     try{
-        const resposta = await fetch("produtosfinal.csv");
+        const url = "produtosfinal.csv";
+        const resposta = await fetch(url);
         if(!resposta.ok){
-            throw new Error("Arquivo produtos.csv não encontrado");
+            throw new Error(`Arquivo ${url} não encontrado`);
         }
         const texto = await resposta.text();
         if(
@@ -516,15 +530,19 @@ async function carregarCSV(){
         linhas.shift();
         for(const linha of linhas){
             if(!linha.trim()) continue;
-            const partes = linha.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g);
+            const partes = linha.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g) ||
+                          linha.match(/(".*?"|[^";]+)(?=\s*;|\s*$)/g);
             if(!partes || partes.length < 4) continue;
 
             const limpar = v => (v || "").trim().replace(/^"|"$/g, "");
+            const parseNumber = s => parseFloat(
+                limpar(s).replace(/\./g, "").replace(/,/g, ".")
+            ) || 0;
 
             const codigo = limpar(partes[0]);
             const nome = limpar(partes[1]);
-            const custo = parseFloat(limpar(partes[2]).replace(",", ".")) || 0;
-            const preco = parseFloat(limpar(partes[3]).replace(",", ".")) || 0;
+            const custo = parseNumber(partes[2]);
+            const preco = parseNumber(partes[3]);
             let markup = null;
             if(custo > 0){
                 markup = (((preco - custo) / custo) * 100);
@@ -539,12 +557,13 @@ async function carregarCSV(){
 }
 
 function pesquisar(){
-    const termo = normalizar(pesquisa.value);
-    if(!termo){
+    const termoNorm = normalizar(pesquisa.value);
+    const termoRaw = pesquisa.value;
+    if(!termoNorm){
         renderizar(produtos);
         return;
     }
-    const termos = termo.split(" ");
+    const termos = termoNorm.split(" ");
     const filtrados = produtos.filter(produto => {
         const texto = normalizar(
             produto.codigo + " " +
@@ -554,7 +573,7 @@ function pesquisar(){
         );
         return termos.every(t => texto.includes(t));
     });
-    renderizar(filtrados, termo);
+    renderizar(filtrados, termoRaw);
 }
 
 function simular(card){
@@ -582,9 +601,9 @@ function simular(card){
     const markupNovo = ((novaVenda - novoCusto) / novoCusto) * 100;
     const markupComDesconto = ((precoComDesconto - novoCusto) / novoCusto) * 100;
 
-    // Variações
-    const varCusto = ((novoCusto - custoAtual) / custoAtual) * 100;
-    const varVenda = ((novaVenda - precoAtual) / precoAtual) * 100;
+    // Variações (protege divisão por zero)
+    const varCusto = custoAtual ? ((novoCusto - custoAtual) / custoAtual) * 100 : 0;
+    const varVenda = precoAtual ? ((novaVenda - precoAtual) / precoAtual) * 100 : 0;
 
     // Se tem desconto, mostra cenário de desconto
     if(desconto > 0){
