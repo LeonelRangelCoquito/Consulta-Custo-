@@ -511,7 +511,7 @@ function moeda(valor){
 
 async function carregarCSV(){
     try{
-        const url = "produtos_processado_1.csv";
+        const url = "preco_custo.csv";
         const resposta = await fetch(url);
         if(!resposta.ok){
             throw new Error(`Arquivo ${url} não encontrado`);
