@@ -530,9 +530,9 @@ async function carregarCSV(){
         linhas.shift();
         for(const linha of linhas){
             if(!linha.trim()) continue;
-            const partes = linha.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g) ||
-                          linha.match(/(".*?"|[^";]+)(?=\s*;|\s*$)/g);
-            if(!partes || partes.length < 4) continue;
+          const partes = linha.split(";");
+
+          if (partes.length < 4) continue;
 
             const limpar = v => (v || "").trim().replace(/^"|"$/g, "");
             const parseNumber = s => parseFloat(
@@ -541,8 +541,8 @@ async function carregarCSV(){
 
             const codigo = limpar(partes[0]);
             const nome = limpar(partes[1]);
-            const custo = parseNumber(partes[2]);
-            const preco = parseNumber(partes[3]);
+            const custo = parseNumber(partes[2]);   // preco_compra
+            const preco = parseNumber(partes[3]);   // preco_varejo
             let markup = null;
             if(custo > 0){
                 markup = (((preco - custo) / custo) * 100);
